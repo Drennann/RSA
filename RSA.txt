@@ -1,0 +1,71 @@
+import Data.Char (ord, chr)
+
+sumaDivisores :: Integer -> Integer -> Integer
+sumaDivisores n i | i == n = n
+                  | mod n i == 0 = i + sumaDivisores n (i+1)
+                  | otherwise = sumaDivisores n (i+1)
+
+esPrimo :: Integer -> Bool
+esPrimo n | sumaDivisores n 1 == (n + 1) = True
+          | otherwise = False
+
+sonCoprimosA :: Integer -> Integer -> Integer -> Bool
+sonCoprimosA 1 _ _ = True
+sonCoprimosA _ 1 _ = True
+sonCoprimosA n1 n2 i | i > n1 || i > n2 = True
+                    | mod n1 i == 0 && mod n2 i == 0 = False
+                    | otherwise = sonCoprimosA n1 n2 (i+1)
+
+sonCoprimos :: Integer -> Integer -> Bool
+sonCoprimos n1 n2 = sonCoprimosA n1 n2 2
+
+
+-- i DEBE VALER 2 --
+encontrarE :: Integer -> Integer -> Integer
+encontrarE m i | i > m-2 = undefined
+               | sonCoprimos m i = i
+               | otherwise = encontrarE m (i+1)
+
+-- i DEBE VALER 1 --
+encontrarInversoMultiplicativoP2 :: Integer -> Integer -> Integer -> Integer
+encontrarInversoMultiplicativoP2 e m i | mod (e*i) m == 1 = i
+                                       | otherwise = encontrarInversoMultiplicativoP2 e m (i+1)
+
+encontrarInversoMultiplicativo :: Integer -> Integer -> Integer
+encontrarInversoMultiplicativo e m | sonCoprimos e m = encontrarInversoMultiplicativoP2 e m 1
+                                   | otherwise = undefined
+
+ord2 :: String -> [Integer]
+ord2 [] = []
+ord2 (x:xs) = (fromIntegral(ord x)):ord2 (xs)
+
+chr2 :: [Integer] -> String
+chr2 [] = []
+chr2 (x:xs) = (chr (fromInteger(x))):chr2 (xs)
+
+numeroModuloD :: (Integer, Integer) -> [Integer] -> [Integer]
+numeroModuloD (n, d) [] = []
+numeroModuloD (n, d) (x:xs) = (mod (x^d) n):numeroModuloD (n,d) xs
+
+numeroModuloE :: (Integer, Integer) -> [Integer] -> [Integer]
+numeroModuloE (n, e) [] = []
+numeroModuloE (n, e) (x:xs) = (mod (x^e) n):numeroModuloE (n,e) xs
+
+--Ejercicio 1--
+
+generarClaves :: Integer -> Integer -> ((Integer, Integer), (Integer, Integer))
+generarClaves p q | (p*q) <= 127 = undefined
+                  | not (esPrimo p && esPrimo q) = undefined
+                  | otherwise = ((p*q, encontrarInversoMultiplicativo (encontrarE ((p-1)*(q-1)) 2) ((p-1)*(q-1))), (p*q, encontrarE ((p-1)*(q-1)) 2))
+
+--Ejercicio 2--
+
+encriptar :: (Integer, Integer) -> String -> [Integer] 
+encriptar (n, d) [] = []
+encriptar (n, d) c = numeroModuloD (n, d) (ord2 c)
+
+--Ejercicio 3--
+
+desencriptar :: (Integer, Integer) -> [Integer] -> String
+desencriptar (n, e) [] = []
+desencriptar (n, e) c = chr2(numeroModuloE (n, e) c)
